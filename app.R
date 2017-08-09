@@ -211,13 +211,21 @@ ui <- material_page(
           label = "Get Reviews"
           
       ),
+      downloadButton('downloadData','Download',class = 'waves-effect waves-light btn deep-purple'),
+      
       width = 3
       )
       ,
       
       material_column(
         
-        material_button("downloadData", "Download",color = 'pink'),
+        # material_button(
+        #   input_id = "downloadLogo",
+        #   label = "Download Logo"
+          
+         #),
+        actionButton('downloadLogo','Download Logo'),
+       
         width = 3
       ) 
     )
@@ -253,34 +261,54 @@ ui <- material_page(
 
 server <- function(input, output) {
   
-  output$downloaded_data_table <- renderDataTable(
+  selectedData <- reactive({
     
     if(input$get_button){
-      
-      reviews_data <- getReviews(input$app_id_1,input$country_code,1)
-  
-      
-      
-      
-      head(reviews_data)
-      
+      getLogo(input$app_id_1,input$country_code)  
+    getReviews(input$app_id_1,input$country_code,1)
+    
     }
+    
+  })
+  
+  
+  output$downloaded_data_table <- renderDataTable(
+    
+   
+    if(input$get_button){
+      head(selectedData())
+    } 
+      
+
+      
+      
+      
+    
     
     
   )
   
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste("reviews-data-", Sys.Date(), ".csv", sep="")
+      paste0(input$country_code,"_log", ".png")
     },
-    content = function(file) {
-      reviews_data <- getReviews(input$app_id_1,input$country_code,1)
-      write.csv(reviews_data, file,row.names = F)
-    }
+  #  content = function(file) {
+      #reviews_data <- getReviews(input$app_id_1,input$country_code,1)
+      #write.csv(selectedData(), file, row.names = F)
+   #   img <- getLogo(input$app_id_1,input$country_code)
+  #    img 
+      
+      content <- function(file) {
+         sink(getLogo(input$app_id_1,input$country_code))
+         sink
+      },
+      contentType = "png"
+      
+   # }
   )
   
   
-  output$downloadLogo <- downloadHandler(
+  downloadLogo1 <- reactive(
     #filename = function() {
     #  paste("reviews-data-", Sys.Date(), ".csv", sep="")
     #},
@@ -288,9 +316,25 @@ server <- function(input, output) {
      # reviews_data <- getReviews(input$app_id_1,input$country_code,1)
      # write.csv(reviews_data, file,row.names = F)
     #}
-    getLogo(input$app_id_1,input$country_code)
+    #if(input$downloadLogo){
+   # if(input$showcase_modal){
+      getLogo(input$app_id_1,input$country_code)
+    #}
+      
+    #}
+    
   )
-  
+    
+  observeEvent(input$downloadLogo, {
+    downloadLogo1()
+    showModal(modalDialog(
+      title = "File Downloaded",
+      "Logo Downloaded Successfully"
+    ))
+    #cat("some text")
+  })
+     
+ 
   
     
 }
