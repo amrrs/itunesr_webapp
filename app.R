@@ -1,11 +1,14 @@
 library(shiny)
 library(shinymaterial)
 library(itunesr)
+library(shinyjs)
+library(dplyr)
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
-  title = "iTunes AppStore Reviews Analysis", nav_bar_color = 'indigo',
-  #background_color = 'grey',
+  useShinyjs(),  # Set up shinyjs
+  title = "iTunes AppStore Reviews Analysis", nav_bar_color = 'deep-purple',
+  background_color = 'light-blue lighten-5',
   # Place side-nav in the beginning of the UI
   #material_side_nav(
   #  fixed = TRUE,
@@ -17,7 +20,7 @@ ui <- material_page(
       "Download" = "first_tab",
       "Analyze" = "second_tab",
       'Contact' = 'third-tab'
-    ),color = 'deep-purple'
+    ),color = 'deep-purple lighten-4'
   ),
   # Define tab content
   material_tab_content(
@@ -188,7 +191,7 @@ ui <- material_page(
           ),
           selected = "us"
         ),
-        width=3
+        width=2
       )
       ,
       
@@ -200,7 +203,7 @@ ui <- material_page(
           color = "#ef5350"
           
         ),
-        width = 3
+        width = 2
       )
       ,
       
@@ -211,7 +214,9 @@ ui <- material_page(
           label = "Get Reviews"
           
       ),
-      downloadButton('downloadData','Download',class = 'waves-effect waves-light btn deep-purple'),
+      
+      
+      downloadButton('downloadData','Download CSV',class = 'waves-effect waves-light btn deep-purple'),
       
       width = 3
       )
@@ -224,7 +229,7 @@ ui <- material_page(
         #   label = "Download Logo"
           
          #),
-        actionButton('downloadLogo','Download Logo'),
+        actionButton('downloadLogo','Download Logo',class = 'waves-effect waves-light btn orange'),
        
         width = 3
       ) 
@@ -240,10 +245,9 @@ ui <- material_page(
     #,
     
     material_card(
-      #title = 'Displaying Top 10 Reviews',
-      #tags$h3('Reviews Output'),
-      depth = 1,
-      dataTableOutput('downloaded_data_table')
+      title = 'Displaying Top 5 Reviews',
+      dataTableOutput('downloaded_data_table'),
+      depth = 1
       
     )
     
@@ -254,7 +258,11 @@ ui <- material_page(
   ),
   material_tab_content(
     tab_id = "second_tab",
-    tags$h1("Under Development!")
+    #tags$h1("Under Development!")
+    material_card(
+      title = "Average Rating Trend",
+      plotOutput("rating_trend")
+    )
     
   )
 )
@@ -264,9 +272,17 @@ server <- function(input, output) {
   selectedData <- reactive({
     
     if(input$get_button){
-      getLogo(input$app_id_1,input$country_code)  
-    getReviews(input$app_id_1,input$country_code,1)
-    
+      
+      if(nchar(input$app_id_1)>1){
+      #getLogo(input$app_id_1,input$country_code)  
+        
+        getReviews(input$app_id_1,input$country_code,1)    
+        }
+      
+      else {
+        shinyjs::alert('Please enter App ID and Try again!')
+      }
+      
     }
     
   })
@@ -290,47 +306,47 @@ server <- function(input, output) {
   
   output$downloadData <- downloadHandler(
     filename = function() {
-      paste0(input$country_code,"_log", ".png")
+      paste("reviews-data-", Sys.Date(), ".csv", sep="")
     },
-  #  content = function(file) {
-      #reviews_data <- getReviews(input$app_id_1,input$country_code,1)
-      #write.csv(selectedData(), file, row.names = F)
-   #   img <- getLogo(input$app_id_1,input$country_code)
-  #    img 
-      
-      content <- function(file) {
-         sink(getLogo(input$app_id_1,input$country_code))
-         sink
-      },
-      contentType = "png"
-      
-   # }
+     content = function(file) {
+       #reviews_data <- getReviews(input$app_id_1,input$country_code,1)
+       write.csv(selectedData(), file, row.names = F)
+     }
   )
   
   
   downloadLogo1 <- reactive(
-    #filename = function() {
-    #  paste("reviews-data-", Sys.Date(), ".csv", sep="")
-    #},
-    #content = function(file) {
-     # reviews_data <- getReviews(input$app_id_1,input$country_code,1)
-     # write.csv(reviews_data, file,row.names = F)
-    #}
-    #if(input$downloadLogo){
-   # if(input$showcase_modal){
-      getLogo(input$app_id_1,input$country_code)
-    #}
+    
+     
       
-    #}
+       getLogo(input$app_id_1,input$country_code)
+     
+      
+    
     
   )
     
   observeEvent(input$downloadLogo, {
-    downloadLogo1()
-    showModal(modalDialog(
-      title = "File Downloaded",
-      "Logo Downloaded Successfully"
-    ))
+    if(nchar(input$app_id_1)>1){
+      downloadLogo1()
+      shinyjs::alert('Download Successful!')
+    }
+    else{
+      
+      shinyjs::alert('Enter Right App ID and Try Again!')
+
+    }
+    
+    
+    output$rating_trend <- renderPlot({
+      
+      
+      selectedData() %>% group_by(Date = as.Date(as.POSIXct(Date))) %>% summarise(Rating = mean(Rating)) %>% ggplot() + geom_point(aes(Date,Rating))
+      
+      
+    })
+    
+    
     #cat("some text")
   })
      
