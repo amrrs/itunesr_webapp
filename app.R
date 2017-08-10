@@ -3,6 +3,7 @@ library(shinymaterial)
 library(itunesr)
 library(shinyjs)
 library(dplyr)
+library(ggplot2)
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
@@ -250,6 +251,8 @@ ui <- material_page(
       depth = 1
       
     )
+   
+   
     
     #downloadLink("downloadData", "Download")
     
@@ -259,10 +262,29 @@ ui <- material_page(
   material_tab_content(
     tab_id = "second_tab",
     #tags$h1("Under Development!")
-    material_card(
-      title = "Average Rating Trend",
-      plotOutput("rating_trend")
+    material_row(
+      material_column(
+        material_card(
+          title = 'Dispws',
+          plotOutput('rating_trend'),
+          depth = 1
+          
+        )
+        ,width = 6
+      ),
+      
+      material_column(
+        material_card(
+          title = 'Dispws',
+          plotOutput('reviews_wordcloud'),
+          depth = 1
+          
+        )
+        ,width = 6
+      )
     )
+    
+    
     
   )
 )
@@ -294,15 +316,38 @@ server <- function(input, output) {
     if(input$get_button){
       head(selectedData())
     } 
-      
-
-      
-      
-      
-    
     
     
   )
+  
+  output$rating_trend <- renderPlot({
+    
+    if(input$get_button){
+    
+    dt <- selectedData() %>% select(Date,Rating)  
+      
+    dt$Date <- as.POSIXct(dt$Date)
+    dt$Rating <- as.numeric(dt$Rating)
+    
+    dt %>% group_by(Date = as.Date(Date)) %>% summarise(Rating = mean(Rating)) %>% ggplot() + geom_line(aes(Date,Rating))
+    
+    }
+    
+  })
+  
+  output$reviews_wordcloud <- renderPlot({
+    
+    if(input$get_button){
+      
+      wordcloud::wordcloud(iconv(selectedData()$Review, "UTF-8", "ASCII", sub = ""))
+         
+    }
+    
+  })
+  
+  
+  
+  
   
   output$downloadData <- downloadHandler(
     filename = function() {
@@ -313,6 +358,7 @@ server <- function(input, output) {
        write.csv(selectedData(), file, row.names = F)
      }
   )
+  
   
   
   downloadLogo1 <- reactive(
@@ -338,13 +384,10 @@ server <- function(input, output) {
     }
     
     
-    output$rating_trend <- renderPlot({
-      
-      
-      selectedData() %>% group_by(Date = as.Date(as.POSIXct(Date))) %>% summarise(Rating = mean(Rating)) %>% ggplot() + geom_point(aes(Date,Rating))
-      
-      
-    })
+    
+    
+    
+    
     
     
     #cat("some text")
