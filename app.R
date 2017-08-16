@@ -246,8 +246,8 @@ ui <- material_page(
     #,
     
     material_card(
-      title = 'Displaying Top 5 Reviews',
-      dataTableOutput('downloaded_data_table'),
+      title = 'Displaying Top Reviews',
+      tableOutput('downloaded_data_table'),
       depth = 1
       
     )
@@ -265,7 +265,7 @@ ui <- material_page(
     material_row(
       material_column(
         material_card(
-          title = 'Dispws',
+          title = 'Average Rating Trend',
           plotOutput('rating_trend'),
           depth = 1
           
@@ -275,7 +275,7 @@ ui <- material_page(
       
       material_column(
         material_card(
-          title = 'Dispws',
+          title = 'Word Cloud',
           plotOutput('reviews_wordcloud'),
           depth = 1
           
@@ -310,11 +310,11 @@ server <- function(input, output) {
   })
   
   
-  output$downloaded_data_table <- renderDataTable(
+  output$downloaded_data_table <- renderTable(
     
    
     if(input$get_button){
-      head(selectedData())
+      head(as.matrix(selectedData()))
     } 
     
     
@@ -339,7 +339,8 @@ server <- function(input, output) {
     
     if(input$get_button){
       
-      wordcloud::wordcloud(iconv(selectedData()$Review, "UTF-8", "ASCII", sub = ""))
+      pal <- RColorBrewer::brewer.pal(9,"BuGn")
+      wordcloud::wordcloud(iconv(selectedData()$Review, "UTF-8", "ASCII", sub = ""),min.freq=2,random.color=TRUE,colors=pal)
          
     }
     
