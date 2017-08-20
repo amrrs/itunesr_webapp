@@ -13,6 +13,8 @@ WebApp in RShiny using the package itunesr for iTunes AppStore Review Extraction
 
 * Install required packages in your Rstudio and execute `runGitHub('amrrs/itunesr_webapp)` in your console 
 
+Note: Please make sure your computer is connected to Internet and not behind any Firewall.
+
 
 First Tab:
 ![Screenshot](itunes_webapp_screenshot.PNG)
