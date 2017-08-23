@@ -4,6 +4,9 @@ library(itunesr)
 library(shinyjs)
 library(dplyr)
 library(ggplot2)
+library(tidytext)
+library(topicmodels)
+
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
@@ -282,6 +285,17 @@ ui <- material_page(
         )
         ,width = 6
       )
+    ),
+    material_row(
+      material_column(
+        material_card(
+          title = 'Reviews Topics and Keywords',
+          plotOutput('reviews_topics'),
+          depth = 1
+      
+        )
+        ,width = 12
+      )
     )
     
     
@@ -359,7 +373,7 @@ server <- function(input, output) {
        write.csv(selectedData(), file, row.names = F)
      }
   )
-  
+   
   
   
   downloadLogo1 <- reactive(
@@ -396,6 +410,105 @@ server <- function(input, output) {
      
  
   
+  output$reviews_topics <- renderPlot({
+    
+    sss <- selectedData()
+    
+    files <- sss$Review[sss$Rating=='1']
+    
+    files <- iconv(files, "latin1", "ASCII", sub="")
+    
+    #create corpus from vector
+    docs <- Corpus(VectorSource(files))
+    
+    #inspect a particular document in corpus
+    #writeLines(as.character(docs[[30]]))
+    
+    
+    #start preprocessing
+    #Transform to lower case
+    docs <-tm_map(docs,content_transformer(tolower))
+    
+    
+    #remove punctuation
+    docs <- tm_map(docs, removePunctuation)
+    #Strip digits
+    docs <- tm_map(docs, removeNumbers)
+    #remove stopwords
+    docs <- tm_map(docs, removeWords, stopwords(kind = 'en'))
+    #remove whitespace
+    docs <- tm_map(docs, stripWhitespace)
+    #Good practice to check every now and then
+    #writeLines(as.character(docs[[30]]))
+    #Stem document
+    #docs <- tm_map(docs,stemDocument)
+    
+    #Create document-term matrix
+    dtm <- DocumentTermMatrix(docs)
+    #convert rownames to filenames
+    #rownames(dtm) <- filenames
+    #collapse matrix by summing over columns
+    freq <- colSums(as.matrix(dtm))
+    #length should be total number of terms
+    length(freq)
+    #create sort order (descending)
+    ord <- order(freq,decreasing=TRUE)
+    #List all terms in decreasing order of freq and write to disk
+    freq[ord]
+    
+    #load topic models library
+    #library(topicmodels)
+    
+    
+    #Set parameters for Gibbs sampling
+    burnin <- 4000
+    iter <- 2000
+    thin <- 500
+    seed <-list(2003,5,63,100001,765)
+    nstart <- 5
+    best <- TRUE
+    
+    
+    #Number of topics
+    k <- 5
+    
+    
+    #Run LDA using Gibbs sampling
+    ldaOut <-LDA(dtm,k, method='Gibbs', control=list(nstart=nstart, seed = seed, best=best, burnin = burnin, iter = iter, thin=thin))
+    
+    
+    #write out results
+    #docs to topics
+    #ldaOut.topics <- as.matrix(topics(ldaOut))
+    
+    #ldaOut.topics
+    
+    #top 6 terms in each topic
+    #ldaOut.terms <- as.matrix(terms(ldaOut,6))
+    #ldaOut.terms
+    
+    
+    ###tidy text
+    
+    topics <- tidy(ldaOut, matrix = "beta")
+    
+    
+    top_terms <- topics %>%
+      group_by(topic) %>%
+      top_n(6, beta) %>%
+      ungroup() %>%
+      arrange(topic, -beta)
+    
+    top_terms %>%
+      mutate(term = reorder(term, beta)) %>%
+      ggplot(aes(term, beta, fill = factor(topic))) +
+      geom_col(show.legend = FALSE) +
+      facet_wrap(~ topic, scales = "free") +
+      coord_flip()
+    
+    
+    
+  })
     
 }
 shinyApp(ui = ui, server = server)
