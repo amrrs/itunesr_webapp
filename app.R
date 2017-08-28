@@ -6,7 +6,8 @@ library(dplyr)
 library(ggplot2)
 library(tidytext)
 library(topicmodels)
-
+library(magrittr)
+library(highcharter)
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
@@ -19,13 +20,17 @@ ui <- material_page(
   #  tags$h3("Menu Item 1")
   #),
   # Define tabs
-  material_tabs(
+  material_row(
+    material_column(
+    material_tabs(
     tabs = c(
       "Download" = "first_tab",
       "Analyze" = "second_tab",
-      'Contact' = 'third-tab'
-    ),color = 'deep-purple lighten-4'
-  ),
+      #"Package Details" = 'package_details',
+      'Contact' = 'third_tab'
+      
+    ),color = 'deep-purple lighten-5'
+  ),width=4)),
   # Define tab content
   material_tab_content(
     tab_id = "first_tab",
@@ -269,7 +274,7 @@ ui <- material_page(
       material_column(
         material_card(
           title = 'Average Rating Trend',
-          plotOutput('rating_trend'),
+          highchartOutput('rating_trend'),
           depth = 1
           
         )
@@ -300,11 +305,29 @@ ui <- material_page(
     
     
     
+  ),
+  material_tab_content(
+    tab_id = "third_tab",
+    material_column(
+    
+      material_card(
+        #title = 'Contact',
+        #tableOutput('downloaded_data_table'),
+        tags$h3('Fork this on github:'),
+        tags$a('https://github.com/amrrs/itunesr_webapp',href='https://github.com/amrrs/itunesr_webapp'),
+        depth = 1
+        
+      ),
+      width = 6
+        
+    )
+    
   )
-)
-
-server <- function(input, output) {
+    
+  )
   
+  server <- function(input, output) {
+    
   selectedData <- reactive({
     
     if(input$get_button){
@@ -334,17 +357,21 @@ server <- function(input, output) {
     
   )
   
-  output$rating_trend <- renderPlot({
+  output$rating_trend <- renderHighchart({
     
     if(input$get_button){
     
-    dt <- selectedData() %>% select(Date,Rating)  
+    dt <- selectedData()
       
-    dt$Date <- as.POSIXct(dt$Date)
-    dt$Rating <- as.numeric(dt$Rating)
+    dt$Date <- as.Date(dt$Date)
+    dt$Rating <- as.numeric(dt$Rating)    
+      
+    dt <- dt %>% select(Date,Rating) %>% group_by(Date) %>% summarise(Rating = round(mean(Rating),2))
+      
     
-    dt %>% group_by(Date = as.Date(Date)) %>% summarise(Rating = mean(Rating)) %>% ggplot() + geom_line(aes(Date,Rating))
+    highchart() %>%   hc_add_series_times_values(dt$Date,dt$Rating, name = 'Average Rating')
     
+                                                                                                           
     }
     
   })
