@@ -9,6 +9,8 @@ library(topicmodels)
 library(magrittr)
 library(highcharter)
 
+options(shiny.sanitize.errors = TRUE)
+
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
   useShinyjs(),  # Set up shinyjs
@@ -313,8 +315,12 @@ ui <- material_page(
       material_card(
         #title = 'Contact',
         #tableOutput('downloaded_data_table'),
-        tags$h3('Fork this on github:'),
-        tags$a('https://github.com/amrrs/itunesr_webapp',href='https://github.com/amrrs/itunesr_webapp'),
+        tags$strong('Contact'),
+        tags$strong('Fork this on github:'),
+        tags$a('amrrs/itunesr_webapp',href='https://github.com/amrrs/itunesr_webapp'),
+        tags$br(),
+        tags$strong('Download this repo:'),
+        tags$a('itunesr_webapp.zip',href='https://github.com/amrrs/itunesr_webapp/archive/master.zip'),
         depth = 1
         
       ),
@@ -438,6 +444,7 @@ ui <- material_page(
  
   
   output$reviews_topics <- renderPlot({
+    
     
     sss <- selectedData()
     
