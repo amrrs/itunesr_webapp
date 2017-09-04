@@ -200,7 +200,7 @@ ui <- material_page(
             "Zimbabwe" = "zw"
             
           ),
-          selected = "us"
+          selected = "gb"
         ),
         width=2
       )
@@ -295,6 +295,7 @@ ui <- material_page(
     ),
     material_row(
       material_column(
+        downloadButton('downloadTopicPlot','Download Topics Image',class = 'waves-effect waves-light btn deep-purple'),
         material_card(
           title = 'Reviews Topics and Keywords',
           plotOutput('reviews_topics'),
@@ -443,7 +444,7 @@ ui <- material_page(
      
  
   
-  output$reviews_topics <- renderPlot({
+  reviews_topics_r <-  reactive({
     
     
     sss <- selectedData()
@@ -504,7 +505,7 @@ ui <- material_page(
     
     
     #Number of topics
-    k <- 5
+    k <- 6
     
     
     #Run LDA using Gibbs sampling
@@ -543,6 +544,17 @@ ui <- material_page(
     
     
   })
-    
+  
+  
+  output$reviews_topics <- renderPlot({
+    reviews_topics_r()
+  })
+  
+  
+  output$downloadTopicPlot <- downloadHandler(
+    filename = function(){'topic_model.png'},
+    content = function(filename){ ggsave(filename, plot = reviews_topics_r(), device='png',width = 25.6,height = 14.4, units='in')
+    })
+     
 }
 shinyApp(ui = ui, server = server)
