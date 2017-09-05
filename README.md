@@ -1,6 +1,8 @@
 # itunesr_webapp
 WebApp in RShiny using the package itunesr for iTunes AppStore Review Extraction and Analysis
 
+Launch this app on Shinyapps.io: https://amrrs.shinyapps.io/itunesr_webapp/ 
+
 ## How to Run this:
 
 **Method 1**
