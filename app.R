@@ -12,6 +12,7 @@ library(shinycssloaders)
 
 options(shiny.sanitize.errors = TRUE)
 options(spinner.type = 5)
+options(spinner.color = '#800080')
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
@@ -25,16 +26,16 @@ ui <- material_page(
   #),
   # Define tabs
   material_row(
-    material_column(
+    #material_column(
     material_tabs(
     tabs = c(
       "Download" = "first_tab",
       "Analyze" = "second_tab",
       #"Package Details" = 'package_details',
       'Contact' = 'third_tab'
-      
     ),color = 'deep-purple lighten-5'
-  ),width=4)),
+  #)
+  )),
   # Define tab content
   material_tab_content(
     tab_id = "first_tab",
@@ -243,6 +244,7 @@ ui <- material_page(
           
          #),
         actionButton('downloadLogo','Download Logo',class = 'waves-effect waves-light btn orange'),
+      
        
         width = 3
       ) 
@@ -287,7 +289,7 @@ ui <- material_page(
       
       material_column(
         material_card(
-          title = 'Word Cloud',
+          title = '1-Star Word Cloud',
           plotOutput('reviews_wordcloud')%>% withSpinner(),
           depth = 1
           
@@ -299,7 +301,7 @@ ui <- material_page(
       material_column(
         downloadButton('downloadTopicPlot','Download Topics Image',class = 'waves-effect waves-light btn deep-purple'),
         material_card(
-          title = 'Reviews Topics and Keywords',
+          title = '1-Star Reviews Topics and Keywords',
           plotOutput('reviews_topics')%>% withSpinner(),
           depth = 1
       
@@ -385,17 +387,6 @@ ui <- material_page(
     
   })
   
-  output$reviews_wordcloud <- renderPlot({
-    
-    if(input$get_button){
-      
-      pal <- RColorBrewer::brewer.pal(9,"BuGn")
-      wordcloud::wordcloud(iconv(selectedData()$Review, "UTF-8", "ASCII", sub = ""),min.freq=2,random.color=TRUE,colors=pal)
-         
-    }
-    
-  })
-  
   
   
   
@@ -435,19 +426,12 @@ ui <- material_page(
     }
     
     
-    
-    
-    
-    
-    
-    
     #cat("some text")
   })
      
  
   
-  reviews_topics_r <-  reactive({
-    
+  reviews_text <- reactive({
     
     sss <- selectedData()
     
@@ -481,20 +465,64 @@ ui <- material_page(
     #docs <- tm_map(docs,stemDocument)
     
     #Create document-term matrix
-    dtm <- DocumentTermMatrix(docs)
     #convert rownames to filenames
     #rownames(dtm) <- filenames
     #collapse matrix by summing over columns
-    freq <- colSums(as.matrix(dtm))
+    #freq <- colSums(as.matrix(dtm))
     #length should be total number of terms
-    length(freq)
+    #length(freq)
     #create sort order (descending)
-    ord <- order(freq,decreasing=TRUE)
+    #ord <- order(freq,decreasing=TRUE)
     #List all terms in decreasing order of freq and write to disk
-    freq[ord]
+    #freq[ord]
+    docs
+    
+  })
+  
+  output$reviews_wordcloud <- renderPlot({
+    
+    if(input$get_button){
+      
+      
+      
+      docs <- reviews_text()
+      
+      tdm <- TermDocumentMatrix(docs)
+      
+      #convert rownames to filenames
+      #rownames(dtm) <- filenames
+      #collapse matrix by summing over columns
+      #freq <- colSums(as.matrix(dtm))
+      #length should be total number of terms
+      #length(freq)
+      #create sort order (descending)
+      #ord <- order(freq,decreasing=TRUE)
+      #List all terms in decreasing order of freq and write to disk
+      #freq[ord]
+      
+      m <- as.matrix(tdm)
+      v <- sort(rowSums(m),decreasing=TRUE)
+      d <- data.frame(word = names(v),freq=v)
+      
+      
+      pal <- RColorBrewer::brewer.pal(9,"BuGn")
+      wordcloud::wordcloud(iconv(d$word, "UTF-8", "ASCII", sub = ""),d$freq,c(8,.3),min.freq=2,random.color=TRUE,colors=pal)
+      
+    }
+    
+  })
+  
+  
+  
+  
+  reviews_topics_r <-  reactive({
     
     #load topic models library
     #library(topicmodels)
+    
+    docs <- reviews_text()
+    
+    dtm <- DocumentTermMatrix(docs)
     
     
     #Set parameters for Gibbs sampling
