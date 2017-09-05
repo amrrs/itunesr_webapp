@@ -8,8 +8,10 @@ library(tidytext)
 library(topicmodels)
 library(magrittr)
 library(highcharter)
+library(shinycssloaders)
 
 options(shiny.sanitize.errors = TRUE)
+options(spinner.type = 5)
 
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
@@ -257,7 +259,7 @@ ui <- material_page(
     
     material_card(
       title = 'Displaying Top Reviews',
-      tableOutput('downloaded_data_table'),
+      tableOutput('downloaded_data_table') %>% withSpinner(),
       depth = 1
       
     )
@@ -276,7 +278,7 @@ ui <- material_page(
       material_column(
         material_card(
           title = 'Average Rating Trend',
-          highchartOutput('rating_trend'),
+          highchartOutput('rating_trend')%>% withSpinner(),
           depth = 1
           
         )
@@ -286,7 +288,7 @@ ui <- material_page(
       material_column(
         material_card(
           title = 'Word Cloud',
-          plotOutput('reviews_wordcloud'),
+          plotOutput('reviews_wordcloud')%>% withSpinner(),
           depth = 1
           
         )
@@ -298,7 +300,7 @@ ui <- material_page(
         downloadButton('downloadTopicPlot','Download Topics Image',class = 'waves-effect waves-light btn deep-purple'),
         material_card(
           title = 'Reviews Topics and Keywords',
-          plotOutput('reviews_topics'),
+          plotOutput('reviews_topics')%>% withSpinner(),
           depth = 1
       
         )
