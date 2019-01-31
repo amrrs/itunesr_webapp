@@ -16,7 +16,7 @@ Launch this app on Shinyapps.io: https://amrrs.shinyapps.io/itunesr_webapp/
 * Install required packages in your Rstudio and execute `runGitHub('amrrs/itunesr_webapp)` in your console 
 
 
-## Please close the web app if you are not using it, since this is hosted in the FREE tier that gives only 20ish active hours
+## \*\*Please close the web app if you are not using it, since this is hosted in the FREE tier that gives only 20ish active hours\*\*
 
 
 First Tab:
