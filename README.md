@@ -9,7 +9,7 @@ Launch this app on Shinyapps.io: https://amrrs.shinyapps.io/itunesr_webapp/
 
 * Download/Clone the repo in your local machine
 * Open *App.R* in your Rstudio 
-* Install requried packages and click Run button (on the top-right above editor) 
+* Install required packages and click Run button (on the top-right above editor) 
 
 **Method 2**
 
