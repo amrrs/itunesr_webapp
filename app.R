@@ -17,7 +17,7 @@ options(spinner.color = '#800080')
 # Wrap shinymaterial apps in material_page
 ui <- material_page(
   useShinyjs(),  # Set up shinyjs
-  title = "iTunes AppStore Reviews Analysis", nav_bar_color = 'deep-purple',
+  title = "iTunes AppStore Reviews Analysis", nav_bar_color = 'darkviolet',
   background_color = 'light-blue lighten-5',
   # Place side-nav in the beginning of the UI
   #material_side_nav(
@@ -33,7 +33,7 @@ ui <- material_page(
       "Analyze" = "second_tab",
       #"Package Details" = 'package_details',
       'Contact' = 'third_tab'
-    ),color = 'deep-purple lighten-5'
+    ),color = 'darkviolet'
   #)
   )),
   # Define tab content
@@ -230,7 +230,7 @@ ui <- material_page(
       ),
       
       
-      downloadButton('downloadData','Download CSV',class = 'waves-effect waves-light btn deep-purple'),
+      downloadButton('downloadData','Download CSV',class = 'waves-effect waves-light btn darkviolet'),
       
       width = 3
       )
@@ -299,7 +299,7 @@ ui <- material_page(
     ),
     material_row(
       material_column(
-        downloadButton('downloadTopicPlot','Download Topics Image',class = 'waves-effect waves-light btn deep-purple'),
+        downloadButton('downloadTopicPlot','Download Topics Image',class = 'waves-effect waves-light btn darkviolet'),
         material_card(
           title = '1-Star Reviews Topics and Keywords',
           plotOutput('reviews_topics')%>% withSpinner(),
